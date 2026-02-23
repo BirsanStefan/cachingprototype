@@ -2,30 +2,41 @@ name: Fetch Catalog Data
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '0 */4 * * *'
   workflow_dispatch:
 
 permissions:
   contents: write
 
+# ============ CONFIGURATION ============
+env:
+  PROJECT_NAME: frisco-isd-community-resources
+  APPS_SCRIPT_URL: https://script.google.com/macros/s/AKfycbz0USuGgO5gFq9YNZFH4Kuuvyiw7dcap44ufklpbX4ViqCR_Tr-SJMTosuHrSZogNMI/exec
+
 jobs:
   fetch:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        language: [en, es]  # Add languages here
+    
     steps:
       - uses: actions/checkout@v3
       
-      - name: Fetch English data
+      - name: Fetch ${{ matrix.language }} data
         run: |
-          curl -L "https://script.google.com/macros/s/AKfycbz0USuGgO5gFq9YNZFH4Kuuvyiw7dcap44ufklpbX4ViqCR_Tr-SJMTosuHrSZogNMI/exec" -o data/frisco-isd-community-resources-en.json
-      
-      - name: Fetch Spanish data
-        run: |
-          curl -L "https://script.google.com/macros/s/AKfycbz0USuGgO5gFq9YNZFH4Kuuvyiw7dcap44ufklpbX4ViqCR_Tr-SJMTosuHrSZogNMI/exec?lang=es" -o data/frisco-isd-community-resources-es.json
+          if [ "${{ matrix.language }}" = "en" ]; then
+            URL="${{ env.APPS_SCRIPT_URL }}"
+          else
+            URL="${{ env.APPS_SCRIPT_URL }}?lang=${{ matrix.language }}"
+          fi
+          
+          curl -L "$URL" -o "data/${{ env.PROJECT_NAME }}-${{ matrix.language }}.json"
       
       - name: Commit and push
         run: |
           git config user.name "BirsanStefan"
           git config user.email "birsanstefan1@gmail.com"
-          git add data/*.json
-          git diff --quiet && git diff --staged --quiet || git commit -m "Update catalog data"
+          git add "data/${{ env.PROJECT_NAME }}-${{ matrix.language }}.json"
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update ${{ env.PROJECT_NAME }} ${{ matrix.language }} data"
           git push
