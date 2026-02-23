@@ -16,11 +16,11 @@ jobs:
       
       - name: Fetch English data
         run: |
-          curl -L "https://script.google.com/macros/s/AKfycbz0USuGgO5gFq9YNZFH4Kuuvyiw7dcap44ufklpbX4ViqCR_Tr-SJMTosuHrSZogNMI/exec" -o data/community-resources-en.json
+          curl -L "https://script.google.com/macros/s/AKfycbz0USuGgO5gFq9YNZFH4Kuuvyiw7dcap44ufklpbX4ViqCR_Tr-SJMTosuHrSZogNMI/exec" -o data/frisco-isd-community-resources-en.json
       
       - name: Fetch Spanish data
         run: |
-          curl -L "https://script.google.com/macros/s/AKfycbz0USuGgO5gFq9YNZFH4Kuuvyiw7dcap44ufklpbX4ViqCR_Tr-SJMTosuHrSZogNMI/exec?lang=es" -o data/community-resources-es.json
+          curl -L "https://script.google.com/macros/s/AKfycbz0USuGgO5gFq9YNZFH4Kuuvyiw7dcap44ufklpbX4ViqCR_Tr-SJMTosuHrSZogNMI/exec?lang=es" -o data/frisco-isd-community-resources-es.json
       
       - name: Commit and push
         run: |
