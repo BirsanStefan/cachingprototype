@@ -12,31 +12,36 @@ permissions:
 env:
   PROJECT_NAME: frisco-isd-community-resources
   APPS_SCRIPT_URL: https://script.google.com/macros/s/AKfycbz0USuGgO5gFq9YNZFH4Kuuvyiw7dcap44ufklpbX4ViqCR_Tr-SJMTosuHrSZogNMI/exec
+  LANGUAGES: en,es  # Add more languages here: en,es,fr,de
 
 jobs:
   fetch:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        language: [en, es]  # Add languages here
-    
     steps:
       - uses: actions/checkout@v3
       
-      - name: Fetch ${{ matrix.language }} data
+      - name: Fetch data for all languages
         run: |
-          if [ "${{ matrix.language }}" = "en" ]; then
-            URL="${{ env.APPS_SCRIPT_URL }}"
-          else
-            URL="${{ env.APPS_SCRIPT_URL }}?lang=${{ matrix.language }}"
-          fi
-          
-          curl -L "$URL" -o "data/${{ env.PROJECT_NAME }}-${{ matrix.language }}.json"
+          # Split languages and loop through them
+          IFS=',' read -ra LANGS <<< "${{ env.LANGUAGES }}"
+          for lang in "${LANGS[@]}"; do
+            echo "Fetching $lang..."
+            
+            # Build the URL (add ?lang=X for non-English)
+            if [ "$lang" = "en" ]; then
+              URL="${{ env.APPS_SCRIPT_URL }}"
+            else
+              URL="${{ env.APPS_SCRIPT_URL }}?lang=$lang"
+            fi
+            
+            # Fetch and save
+            curl -L "$URL" -o "data/${{ env.PROJECT_NAME }}-$lang.json"
+          done
       
       - name: Commit and push
         run: |
           git config user.name "BirsanStefan"
           git config user.email "birsanstefan1@gmail.com"
-          git add "data/${{ env.PROJECT_NAME }}-${{ matrix.language }}.json"
-          git diff --quiet && git diff --staged --quiet || git commit -m "Update ${{ env.PROJECT_NAME }} ${{ matrix.language }} data"
+          git add data/${{ env.PROJECT_NAME }}-*.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update ${{ env.PROJECT_NAME }} data"
           git push
